@@ -2,26 +2,155 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* --------------------------------------------------------------------
+ * Lenis recommended styles (kept in sync with the SmoothScroll provider)
+ * ------------------------------------------------------------------ */
+html.lenis,
+html.lenis body {
+  height: auto;
 }
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  overflow-x: clip;
+}
+
+::selection {
+  background: #ff4d00;
+  color: #0f0f0e;
+}
+
+/* Visible focus for keyboard users even though the native cursor is hidden */
+:focus-visible {
+  outline: 2px solid #ff4d00;
+  outline-offset: 4px;
+}
+
+/* Hide the native cursor ONLY on precise pointers, and only once the
+   custom cursor has mounted (class added from CustomCursor.tsx). */
+@media (pointer: fine) {
+  .has-custom-cursor,
+  .has-custom-cursor * {
+    cursor: none !important;
+  }
+}
+
+@layer components {
+  /* ---- Single container: identical gutters on every section --------- */
+  .container-site {
+    @apply mx-auto w-full max-w-6xl px-5 md:px-10;
+  }
+
+  /* ---- Uniform section rhythm (mobile-first) ----------------------- */
+  .section-pad {
+    @apply py-16 md:py-32;
+  }
+
+  /* ---- Small caps label above each section title --------------------- */
+  .eyebrow {
+    @apply mb-4 flex items-center gap-3 text-[11px] font-medium uppercase tracking-[0.22em] md:mb-6;
+  }
+
+  /* ---- One heading scale for every section (mobile-first) ----------- */
+  .section-title {
+    @apply font-display text-2xl font-bold uppercase leading-[1.05] tracking-[-0.02em] md:text-5xl;
+  }
+
+  /* ---- Shared button shapes (fill sweep comes from .btn-fill) -------- */
+  .btn-pill {
+    @apply btn-fill inline-flex items-center justify-center gap-3 rounded-full border border-paper/30 px-5 py-2.5 font-display text-[11px] font-bold uppercase tracking-[0.18em] transition-colors duration-300 hover:border-transparent hover:text-ink focus-visible:text-ink md:px-6 md:py-3;
+  }
+  .btn-circle {
+    @apply btn-fill flex h-12 w-12 items-center justify-center rounded-full border border-paper/30 transition-colors duration-300 hover:border-accent hover:bg-accent hover:text-ink focus-visible:text-ink md:h-14 md:w-14;
+  }
 }
 
 @layer utilities {
-  .text-balance {
-    text-wrap: balance;
+  /* ---- Editorial underline that draws itself in on hover/focus ------ */
+  .link-line {
+    position: relative;
+  }
+  .link-line::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -3px;
+    height: 1px;
+    width: 100%;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .link-line:hover::after,
+  .link-line:focus-visible::after {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+
+  /* ---- Pill/circle fill that sweeps up on hover ---------------------- */
+  .btn-fill {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+  }
+  .btn-fill::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--fill, #efebe4);
+    transform: translateY(101%);
+    transition: transform 0.5s cubic-bezier(0.76, 0, 0.24, 1);
+  }
+  .btn-fill:hover::before,
+  .btn-fill:focus-visible::before {
+    transform: translateY(0);
+  }
+
+  /* ---- Scroll-down indicator line ----------------------------------- */
+  @keyframes scroll-line {
+    0% {
+      transform: scaleY(0);
+      transform-origin: top;
+    }
+    45% {
+      transform: scaleY(1);
+      transform-origin: top;
+    }
+    55% {
+      transform: scaleY(1);
+      transform-origin: bottom;
+    }
+    100% {
+      transform: scaleY(0);
+      transform-origin: bottom;
+    }
+  }
+  .animate-scroll-line {
+    animation: scroll-line 2.2s cubic-bezier(0.76, 0, 0.24, 1) infinite;
+  }
+}
+
+/* --------------------------------------------------------------------
+ * Global reduced-motion kill-switch: any CSS animation/transition
+ * collapses to its end state instantly. JS-driven motion is handled
+ * separately via MotionConfig + matchMedia checks in the components.
+ * ------------------------------------------------------------------ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
